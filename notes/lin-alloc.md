@@ -24,7 +24,7 @@ This basic implementation does not take into account memory alignment.
 
 Modern computer architectures always read memory at its "word size". Some do permit reading unaligned memory, but this then takes multiple reads. The resulting memory access may then be much slower than an aligned memory access.
 
-## Aligning a Memory Address
+### Aligning a Memory Address
 
 Aligning memory usually means aligned by a power of two. This means we need to check if an address is aligned by two.
 
@@ -41,4 +41,39 @@ To align a memory address to the specified alignment is simple modulo arithmetic
         // next value which is aligned
         p += a - modulo;
     }
+```
+
+Following is an example of an arena structure. The whole implementation can be found in `../lin-alloc/`.
+
+```C
+typedef struct Arena Arena;
+struct Arena {
+	unsigned char *buf;
+	size_t         buf_len;
+	size_t         prev_offset;
+	size_t         curr_offset;
+};
+```
+
+## Implementing The Rest
+
+Apart from just the allocating function, we also need to implement initializing, freeing, resizing, etc.:
+
+- `arena_init` initializes the arena with a pre-allocated memory buffer.
+- `arena_alloc` increments the current buffer offset.
+- `arena_resize` if the allocation being resized was the previously performed allocation, the same pointer will be returned and the buffer offset is changed. Otherwise, `arena_alloc` will be called instead.
+- `arena_free_all` is used to free all the memory within the allocator, by setting offsets to zero.
+
+## Using The Allocator
+
+The allocator needs some backing memory, where the allocating are performed. The backing memory can come from either `malloc` or just an array.
+
+```C
+unsigned char backing_buffer_arr[256];
+Arena a = {0};
+arena_init(&a, backing_buffer_arr, 256);
+
+void *backing_buffer_dyn = malloc(256);
+Arena b = {0};
+arena_init(&b, backing_buffer_dyn, 256);
 ```
