@@ -42,8 +42,47 @@ void *arena_alloc_align(Arena *a, size_t size, size_t align) {
     return NULL;
 }
 
+void *arena_resize_align(Arena *a, void *old_memory, size_t old_size, size_t new_size, size_t align) {
+    unsigned char *old_mem = (unsigned char *)old_memory;
+    assert(is_power_of_two(align));
+
+    if(old_mem == NULL || old_size == 0) {
+        return arena_alloc_align(a, new_size, align);
+    } else if(a->buf <= old_mem && old_mem < a->buf + a->buf_len) {
+        if(a->buf + a->prev_offset == old_mem) {
+            a->curr_offset = a->prev_offset + new_size;
+            if(new_size > old_size) {
+                memset(&a->buf[a->curr_offset], 0, new_size - old_size);
+            }
+            return old_memory;
+        } else {
+            void *new_memory = arena_alloc_align(a, new_size, align);
+            size_t copy_size = old_size < new_size? old_size : new_size;
+            memmove(new_memory, old_memory, copy_size);
+            return new_memory;
+        }
+    } else {
+        assert(0 && "Memory is out of bounds of the buffer in this arena");
+        return NULL;
+    }
+}
+
+void arena_init(Arena *a, void *backing_buffer, size_t backing_buffer_len) {
+    a->buf = (unsigned char *)backing_buffer;
+    a->buf_len = backing_buffer_len;
+    a->curr_offset = 0;
+    a->prev_offset = 0;
+}
+
 void *arena_alloc(Arena *a, size_t size) {
     return arena_alloc_align(a, size, DEFAULT_ALIGNMENT);
 }
 
-int main(){}
+void *arena_resize(Arena *a, void *old_memory, size_t old_size, size_t new_size) {
+        return arena_resize_align(a, old_memory, old_size, new_size, DEFAULT_ALIGNMENT);
+}
+
+void arena_free_all(Arena *a) {
+    a->curr_offset = 0;
+    a->prev_offset = 0;
+}
