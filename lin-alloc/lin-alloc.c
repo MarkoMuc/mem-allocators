@@ -7,6 +7,12 @@ struct Arena {
     size_t curr_offset;
 };
 
+struct Temp_Arena_Memory {
+	Arena *arena;
+	size_t prev_offset;
+	size_t curr_offset;
+};
+
 inline bool is_power_of_two(uintptr_t x) {
     return (x & (x-1)) == 0;
 }
@@ -85,4 +91,18 @@ void *arena_resize(Arena *a, void *old_memory, size_t old_size, size_t new_size)
 void arena_free_all(Arena *a) {
     a->curr_offset = 0;
     a->prev_offset = 0;
+}
+
+Temp_Arena_Memory temp_arena_memory(Arena *a) {
+    Temp_Arena_Memory temp;
+    temp.arena = a;
+    temp.prev_offset = a->prev_offset;
+    temp.curr_offset = a->curr_offset;
+
+    return temp;
+}
+
+void temp_arena_memory_end(Temp_Arena_Memory temp) {
+    temp.arena->prev_offset = temp.prev_offset;
+    temp.arena->curr_offset = temp.curr_offset;
 }
