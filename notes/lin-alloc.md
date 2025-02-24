@@ -77,3 +77,7 @@ void *backing_buffer_dyn = malloc(256);
 Arena b = {0};
 arena_init(&b, backing_buffer_dyn, 256);
 ```
+
+## Extra Features
+
+One extra feature that can be added is a temporary arena memory *savepoint*. This is useful when you just want to use some memory in an arena for a very short period and then reset to the previously saved point.
