@@ -48,10 +48,10 @@ Following is an example of an arena structure. The whole implementation can be f
 ```C
 typedef struct Arena Arena;
 struct Arena {
-	unsigned char *buf;
-	size_t         buf_len;
-	size_t         prev_offset;
-	size_t         curr_offset;
+    unsigned char *buf;
+    size_t  buf_len;
+    size_t  prev_offset;
+    size_t  curr_offset;
 };
 ```
 
