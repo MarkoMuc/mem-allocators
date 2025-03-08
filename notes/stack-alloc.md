@@ -85,4 +85,26 @@ Maximum Alignment in Bytes = 2 ^ ((8 * sizeof(padding)) - 1)
 
 The `stack_init` procedure just initializes the parameters for the given stack.
 
+### Alloc
+
+Unlike an arena, stack allocator requires a header alongside the allocation. The `calc_padding_with_header` procedure
+is similar to the `align_forward` which is used in with arena allocator, however is determines how much space is needed
+with respect to the header and the requested alignment. In the header, the amount of padding needs to be stored and the
+address after that header needs to be returned.
+
+### Free
+
+For `stack_free`, the pointer passed needs to be checked as to whether is valid (i.e. it was allocated by this allocator).
+If it is valid, this means it is possible to acquitre the header of this allocation. Using a little pointer arithmetic,
+we can reset the offset to the allocation previous to the passed pointer.
+
+### Resize
+
+Resizing the allocation is sometimes useful in a stack allocator. As we don't store the previous offset for this
+particular version, we will just reallocate new memory if there needs to be a change in allocation size.
+
+### Free All
+
+This is used to free all the memory within the allocator, by setting the buffer offset to zero. This is useful for
+when you want to reset on a per cycle/frame basis.
 
