@@ -108,3 +108,37 @@ particular version, we will just reallocate new memory if there needs to be a ch
 This is used to free all the memory within the allocator, by setting the buffer offset to zero. This is useful for
 when you want to reset on a per cycle/frame basis.
 
+## Improving the Stack Allocator
+
+The small stack allocator does not enforce the LIFO principles for frees. It allows the user to free any block of memory
+in any order but frees everything that was allocated after it. In order to enforce the LIFO principles, data about
+the previous offset needs to be stored in the header and the general data structure.
+
+```C
+struct Stack_Allocation_Header {
+    size_t prev_offset;
+    size_t padding;
+};
+
+struct Stack {
+    unsigned char *buf;
+    size_t buf_len;
+    size_t prev_offset;
+    size_t curr_offset;
+};
+```
+
+This new header is a lot larger compared to the padding approach, but it does mean the LIFO for frees can be enforced.
+There only needs to be a few adjustments to the code.
+
+## Comments and Conclusion
+
+If you do not want the LIFO to be enforced, it can be better to just use the `Temp_Arena_Memory` constructor instead.
+
+You can extend the stack allocator even further by having two different offsets:
+
+- One that starts at the beginning and increments forwards.
+- One that starts at the end and increments backwards.
+
+This is called a **double-ended stack** and allows for the maximization of memory usage whilst keeping fragmentation
+extremely low (as long as the offset never overlap).
