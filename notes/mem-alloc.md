@@ -3,6 +3,7 @@
 ## Sources
 
 - [gingerBill Memory Allocation Strategies](https://www.gingerbill.org/series/memory-allocation-strategies/).
+- [molecular musings blog](https://blog.molecular-matters.com/).
 
 ## Introduction
 

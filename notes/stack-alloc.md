@@ -3,6 +3,7 @@
 ## Sources
 
 - [gingerBill Memory Allocation Strategies](https://www.gingerbill.org/article/2019/02/15/memory-allocation-strategies-003/).
+- [The Dynamic Storage Structure of Double-ended Stack](https://www.atlantis-press.com/proceedings/iceat-16/25869767).
 
 ## Stack-Like (LIFO) Allocation
 
@@ -142,3 +143,7 @@ You can extend the stack allocator even further by having two different offsets:
 
 This is called a **double-ended stack** and allows for the maximization of memory usage whilst keeping fragmentation
 extremely low (as long as the offset never overlap).
+
+## The Dynamic Storage Structure of Double-ended Stack
+
+
