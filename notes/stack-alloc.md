@@ -3,7 +3,6 @@
 ## Sources
 
 - [gingerBill Memory Allocation Strategies](https://www.gingerbill.org/article/2019/02/15/memory-allocation-strategies-003/).
-- [The Dynamic Storage Structure of Double-ended Stack](https://www.atlantis-press.com/proceedings/iceat-16/25869767).
 
 ## Stack-Like (LIFO) Allocation
 
@@ -144,6 +143,18 @@ You can extend the stack allocator even further by having two different offsets:
 This is called a **double-ended stack** and allows for the maximization of memory usage whilst keeping fragmentation
 extremely low (as long as the offset never overlap).
 
-## The Dynamic Storage Structure of Double-ended Stack
+## Double-Ended Stack Allocators
 
+Double ended stack allocators have two offsets, one at the top and one at the bottom of the stack. This allows for
+allocating on both ends of the stack. This stack allocator uses memory more efficiently by allowing a trade-off to
+occur between the memory usage at the bottom and the memory usage at the top of the stack. As a result we can end
+up with less memory fragmentation.
 
+#### How does this structure help with memory fragmentation?
+
+The benefit comes from lifetimes of various objects. Normally we separate objects by their lifetimes, keeping those
+with a longer lifetime on one side and those with a shorter (normally temporary lifetime) on the other end.
+This allows us to either free all the temporary objects, which couldn't be done in a single ended stack since it follows
+the LIFO principle. In case freeing cannot be done, e.g. because objects on the other end depend on this one,
+we can still benefit by keeping the objects separate, since there tends to be some sort of spatial and temporal locality
+benefit.
