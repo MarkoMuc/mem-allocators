@@ -27,6 +27,9 @@
 #define DEFAULT_ALIGNMENT (2*sizeof(void *))
 #endif
 
+#define STACK_FRONT false
+#define STACK_END   true
+
 typedef struct Stack Stack;
 typedef struct Stack_Alloc_Header Stack_Alloc_Header;
 
@@ -44,7 +47,7 @@ struct Stack_Alloc_Header {
 
 bool is_power_of_two(uintptr_t x);
 size_t calc_padding_with_header(uintptr_t ptr, uintptr_t alignment, size_t header_size);
-void *stack_alloc_align(Stack *s, size_t size, size_t alignment);
+void *stack_alloc_align(Stack *s, size_t size, bool side, size_t alignment);
 void *stack_resize_align(Stack *s, void *ptr, size_t old_size, size_t new_size, size_t alignment);
 
 void *stack_alloc(Stack *s, size_t size);
