@@ -88,7 +88,7 @@ void *stack_resize_align(Stack *s, void *ptr, size_t old_size, size_t new_size, 
         header = (Stack_Alloc_Header *)(curr_addr - sizeof(Stack_Alloc_Header));
         prev_offset = (size_t)(curr_addr - (uintptr_t)header->padding - start);
 
-        if(prev_offset != header->prev_offset) {
+        if(prev_offset != s->prev_offset) {
             assert(0 && "Out of order stack allocator free");
             return NULL;
         }
@@ -133,7 +133,7 @@ void stack_free(Stack *s, void *ptr) {
         header = (Stack_Alloc_Header *)(curr_addr + sizeof(Stack_Alloc_Header));
         prev_offset = (size_t)(curr_addr - (uintptr_t)header->padding - start);
 
-        if(prev_offset != header->prev_offset) {
+        if(prev_offset != s->prev_offset) {
             assert(0 && "Out of order stack allocator free");
             return;
         }
