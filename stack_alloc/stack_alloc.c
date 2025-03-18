@@ -91,11 +91,16 @@ void *stack_resize_align(Stack *s, void *ptr, size_t old_size, size_t new_size, 
         }
 
         if (old_size == min_size) {
-
             return ptr;
         }
 
-        new_ptr = stack_alloc_align(s, new_size, alignment);
+        if ((size_t)(curr_addr + old_size - start) != s->offset) {
+            new_ptr = stack_alloc_align(s, new_size, alignment);
+        } else {
+            new_ptr = (void *)(curr_addr + (uintptr_t)new_size);
+            s->offset = (size_t)(curr_addr + new_size - start);
+        }
+
         memmove(new_ptr, ptr, min_size);
         return new_ptr;
     }
