@@ -88,21 +88,18 @@ void *stack_resize_align(Stack *s, void *ptr, size_t old_size, size_t new_size, 
         header = (Stack_Alloc_Header *)(curr_addr - sizeof(Stack_Alloc_Header));
         prev_offset = (size_t)(curr_addr - (uintptr_t)header->padding - start);
 
-        if(prev_offset != s->prev_offset) {
-            assert(0 && "Out of order stack allocator free");
-            return NULL;
-        }
-
         if (old_size == min_size) {
             return ptr;
         }
 
-        new_ptr = stack_alloc_align(s, new_size, alignment);
+        if(prev_offset != s->prev_offset) {
+            new_ptr = stack_alloc_align(s, new_size, alignment);
+        } else {
+            new_ptr = (void *)(curr_addr + (uintptr_t)new_size);
+            s->curr_offset = (size_t)(curr_addr + new_size - start);
+        }
+
         memmove(new_ptr, ptr, min_size);
-
-        s->curr_offset = s->prev_offset;
-        s->prev_offset = header->prev_offset;
-
         return new_ptr;
     }
 }
