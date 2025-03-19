@@ -127,6 +127,11 @@ void stack_free(Stack *s, void *ptr) {
             return;
         }
 
+        if(curr_addr >= start+(uintptr_t)s->curr_offset) {
+            // Double free
+            return;
+        }
+
         header = (Stack_Alloc_Header *)(curr_addr + sizeof(Stack_Alloc_Header));
         prev_offset = (size_t)(curr_addr - (uintptr_t)header->padding - start);
 
