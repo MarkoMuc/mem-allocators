@@ -36,7 +36,9 @@ struct Stack {
     unsigned char *buf;
     size_t buf_len;
     size_t start_offset;
+    size_t start_prev_offset;
     size_t end_offset;
+    size_t end_prev_offset;
 };
 
 struct Stack_Alloc_Header {

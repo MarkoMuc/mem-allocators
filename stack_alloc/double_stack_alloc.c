@@ -50,17 +50,21 @@ void *stack_alloc_align(Stack *s, size_t size, enum StackSide side, size_t align
     }
 
     if(side == STACK_FRONT) {
-        prev_offset = s->start_offset;
-        s->start_offset += padding; 
         next_addr = curr_addr + (uintptr_t)padding;
         header = (Stack_Alloc_Header *)(next_addr - sizeof(Stack_Alloc_Header));
-        s->start_offset += size;
+
+        s->start_prev_offset = s->start_offset;
+        s->start_offset += padding + size;
+
+        prev_offset = s->start_offset;
     } else {
-        prev_offset = s->end_offset;
-        s->end_offset -= padding; 
         next_addr = curr_addr - (uintptr_t)padding;
         header = (Stack_Alloc_Header *)(next_addr + sizeof(Stack_Alloc_Header));
-        s->end_offset -= size;
+
+        s->end_prev_offset = s->end_offset; 
+        s->end_offset -= padding - size; 
+
+        prev_offset = s->end_offset;
     }
 
     header->padding = (uint8_t)padding;
@@ -97,9 +101,8 @@ void *stack_resize_align(Stack *s, void *ptr, size_t old_size, size_t new_size, 
         header = (Stack_Alloc_Header *)(curr_addr - sizeof(Stack_Alloc_Header));
         prev_offset = (size_t)(curr_addr + ((side == STACK_FRONT? -1 : 1) * header->padding) - start);
 
-        const size_t next_addr_offset = (size_t) curr_addr + ((side == STACK_FRONT? 1 : -1) * old_size) - (size_t) start;
-        if ((side == STACK_FRONT && next_addr_offset != s->start_offset) ||
-            (side == STACK_END && next_addr_offset != s->end_offset)) {
+        if ((side == STACK_FRONT && prev_offset != s->start_prev_offset) ||
+            (side == STACK_END && prev_offset != s->end_prev_offset)) {
             new_ptr = stack_alloc_align(s, new_size, side, alignment);
         } else {
             new_ptr = (void *)(curr_addr + (uintptr_t)new_size);
@@ -155,13 +158,19 @@ void stack_free(Stack *s, void *ptr, enum StackSide side) {
         header = (Stack_Alloc_Header *)(curr_addr + sizeof(Stack_Alloc_Header));
         prev_offset = (size_t)(curr_addr - (uintptr_t)header->padding - start);
 
-        if(prev_offset != s->prev_offset) {
+        if((side == STACK_FRONT && prev_offset != s->start_prev_offset) ||
+            (side == STACK_END && prev_offset != s->end_prev_offset)) {
             assert(0 && "Out of order stack allocator free");
             return;
         }
 
-        s->curr_offset = s->prev_offset;
-        s->prev_offset = header->prev_offset;
+        if(side == STACK_FRONT) {
+            s->start_offset = s->start_prev_offset;
+            s->start_prev_offset = header->prev_offset;
+        } else {
+            s->end_offset = s->end_prev_offset;
+            s->end_prev_offset = header->prev_offset;
+        }
     }
 }
 
@@ -175,12 +184,18 @@ void stack_free_end(Stack *s, void *ptr) {
 
 void stack_free_all(Stack *s) {
     s->start_offset = 0;
+    s->start_prev_offset = 0;
     s->end_offset = s->buf_len - 1;
+    s->end_prev_offset = s->buf_len - 1;
 }
 
 void stack_init(Stack *s, void *backing_buffer, size_t backing_buffer_length) {
     s->buf = (unsigned char *)backing_buffer;
     s->buf_len = backing_buffer_length;
     s->start_offset = 0;
+    s->start_prev_offset = 0;
     s->end_offset = backing_buffer_length - 1;
+    s->end_prev_offset = backing_buffer_length - 1;
 }
+
+int main(){}
