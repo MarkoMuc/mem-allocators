@@ -60,3 +60,4 @@ Memory lifetimes can also be organized by their allocation generation.
 - [Linear Allocators](./lin-alloc.md).
 - [Stack Allocators](./stack-alloc.md).
 - [Pool Allocators](./pool-alloc.md).
+- [Free List Allocators](./list-alloc.md).
