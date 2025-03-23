@@ -15,7 +15,7 @@ Pool allocators are extremely useful when you need to allocate chunks of memory 
 destroyed dynamically, especially in a random order. Pools provide very little fragmentation and allocate/free in
 constant time **O(1)**.
 
-Poll allocators are usually used to allocate groups of thins at once which share the same lifetime.
+Poll allocators are usually used to allocate groups of things at once which share the same lifetime.
 
 ## Basic Logic
 
