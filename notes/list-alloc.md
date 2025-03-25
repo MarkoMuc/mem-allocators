@@ -84,3 +84,8 @@ had to store both the previous and next free nodes, this means that we may be ab
 possible.
 
 This algorithm has a time complexity of **O(N)**, where **N** is the number of free blocks in the free list.
+
+### Utilities
+
+We also add general utilities needed for free list insertion, removal and calculating the padding required for the
+header.
