@@ -2,7 +2,7 @@
 
 ## Sources
 
-- [gingerBill Memory Allocation Strategies](https://www.gingerbill.org/article/2019/02/15/memory-allocation-strategies-004/).
+- [gingerBill Memory Allocation Strategies](https://www.gingerbill.org/article/2019/02/16/memory-allocation-strategies-004/).
 - [Free lists](https://en.wikipedia.org/wiki/Free_list)
 
 ## Pool-Based Allocation
