@@ -3,15 +3,23 @@
 ## Sources
 
 - [gingerBill Memory Allocation Strategies](https://www.gingerbill.org/article/2021/11/30/memory-allocation-strategies-005/).
+- [Linked List](https://en.wikipedia.org/wiki/Linked_list).
+- [Red-black tree](https://en.wikipedia.org/wiki/Red%e2%80%93black_tree).
 
 ## Free List Based Allocation
 
-Pool allocator splits the backing buffer into equal chunks and keeps track of which of the chunks are free. Pools are fast allocators that allow
-for *out of order free* in constant time, whilst keeping very little fragmentation. The main restriction is that every memory allocation must be
-of the same size.
+Pool allocator splits the backing buffer into equal chunks and keeps track of which of the chunks are free. Pools are
+fast allocators that allow for *out of order free* in constant time, whilst keeping very little fragmentation. The main
+restriction is that every memory allocation must be of the same size.
 
-A free list is a general purpose allocator, that does not impose any restrictions. It allows allocations and deallocations to be our of order and
-of any size. Due to its nature, the allocator's performance is not as good as linear allocators.
+A free list is a general purpose allocator, that does not impose any restrictions. It allows allocations and
+deallocations to be our of order and of any size. Due to its nature, the allocator's performance is not as good as linear
+allocators.
+
+There are two main approaches to implement a free list allocator:
+
+1. Linked list.
+2. Red-black tree.
 
 ## Link List Approach
 
@@ -19,8 +27,9 @@ We will use a linked list to store the address of free contiguous block in the m
 in the linked list for a block where the data can fit. It then removes the element from the list and places an allocation header (required for free)
 just before the data.
 
-For freeing memory, we recover the allocation header (stored before the allocation) to know the size of the block we want to free. Once that block
-has been freed, it is inserted into the linked list, and then we try to *coalescence* contiguous blocks of memory together to create larger blocks.
+For freeing memory, we recover the allocation header (stored before the allocation) to know the size of the block we want
+to free. Once that block has been freed, it is inserted into the linked list, and then we try to *coalescence*
+contiguous blocks of memory together to create larger blocks.
 
 ## Linked List Free List Implementation
 
@@ -89,3 +98,21 @@ This algorithm has a time complexity of **O(N)**, where **N** is the number of f
 
 We also add general utilities needed for free list insertion, removal and calculating the padding required for the
 header.
+
+## Red-Black Tree Approach
+
+The red-black tree improves the speed at which allocations and deallocations can be done. In the linked list, any
+operations made is needed to be iterated across linearly **O(N)**. A red-black reduces its time complexity to
+**O(log(N))**, whilst keeping the space complexity relatively low. And as a consequence of this data-structure approach,
+a *best-fit* algorithm may be taken always.
+
+The minor increase in space complexity is due to using a sorted doubly linked list, but as a consequence, it allows
+coalescence operations in **O(1)** time.
+
+This implementation is a common aspect in many `malloc` implementations, but note that most `malloc`s utilize multiple
+different memory allocation strategies that complement each other.
+
+## Conclusion
+
+The free list allocator is a very useful allocator for when you need a general purpose allocator that requires
+allocations of arbitrary size and out of order deallocations.
