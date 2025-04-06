@@ -41,11 +41,13 @@ struct Buddy_Allocator {
 };
 
 bool is_power_of_two(uintptr_t x);
-Buddy_Block *buddy_block_next(Buddy_Block *block);
+size_t align_forward_size(size_t ptr, size_t align);
 size_t buddy_block_size_required(Buddy_Allocator *b, size_t size);
+Buddy_Block *buddy_block_next(Buddy_Block *block);
 
-void buddy_block_coalescence(Buddy_Block *head, Buddy_Block *tail);
 Buddy_Block *buddy_block_find_best(Buddy_Block *head, Buddy_Block *tail, size_t size);
-void buddy_block_init(Buddy_Allocator *b, void *data, size_t size, size_t alignment);
 Buddy_Block *buddy_block_split(Buddy_Block *block, size_t size);
-
+void *buddy_allocator_alloc(Buddy_Allocator *b, size_t size);
+void buddy_allocator_free(Buddy_Allocator *b, void *data);
+void buddy_block_coalescence(Buddy_Block *head, Buddy_Block *tail);
+void buddy_block_init(Buddy_Allocator *b, void *data, size_t size, size_t alignment);

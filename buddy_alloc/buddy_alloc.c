@@ -8,6 +8,35 @@ Buddy_Block *buddy_block_next(Buddy_Block *block) {
     return (Buddy_Block *)((char *)block + block->size);
 }
 
+size_t align_forward_size(size_t ptr, size_t align) {
+    size_t a, p, modulo;
+
+    assert(is_power_of_two((uintptr_t)align));
+
+    a = align;
+    p = ptr;
+    modulo = p & (a-1);
+
+    if(modulo != 0) {
+        p += a - modulo;
+    }
+
+    return p;
+}
+
+size_t buddy_block_size_required(Buddy_Allocator *b, size_t size) {
+    size_t actual_size = b->alignment;
+
+    size += sizeof(Buddy_Block);
+    size = align_forward_size(size, b->alignment);
+
+    while(size > actual_size) {
+        actual_size <<= 1;
+    }
+
+    return actual_size;
+}
+
 Buddy_Block *buddy_block_find_best(Buddy_Block *head, Buddy_Block *tail, size_t size) {
     Buddy_Block *best_block = NULL;
     Buddy_Block *block = head; // left buddy
@@ -67,6 +96,38 @@ Buddy_Block *buddy_block_find_best(Buddy_Block *head, Buddy_Block *tail, size_t 
     return NULL;
 }
 
+void buddy_block_coalescence(Buddy_Block *head, Buddy_Block *tail) {
+    while(true) {
+        Buddy_Block *block = head;
+        Buddy_Block *buddy = buddy_block_next(block);
+
+        bool no_coalescence = true;
+
+        while(block < tail && buddy < tail) {
+            if(buddy->is_free && block->size == buddy->size) {
+                block->size <<= 1;
+                block = buddy_block_next(block);
+                if(block < tail) {
+                    buddy = buddy_block_next(block);
+                    no_coalescence = false;
+                }
+            } else if(block->size < buddy->size) {
+                block = buddy;
+                buddy = buddy_block_next(buddy);
+            } else {
+                buddy = buddy_block_next(buddy);
+                if(block < tail) {
+                    buddy = buddy_block_next(block);
+                }
+            }
+        }
+
+        if(no_coalescence) {
+            return;
+        }
+    }
+}
+
 void buddy_block_init(Buddy_Allocator *b, void *data, size_t size, size_t alignment) {
     assert(data != NULL);
     assert(is_power_of_two(size) && "size is not power-of-two");
@@ -104,4 +165,38 @@ Buddy_Block *buddy_block_split(Buddy_Block *block, size_t size) {
     }
 
     return NULL;
+}
+
+void *buddy_allocator_alloc(Buddy_Allocator *b, size_t size) {
+    if(size != 0) {
+        size_t actual_size = buddy_block_size_required(b, size);
+
+        Buddy_Block *found = buddy_block_find_best(b->head, b->tail, actual_size);
+        if(found == NULL) {
+            //coalesce free block and search again
+            buddy_block_coalescence(b->head, b->tail);
+            found = buddy_block_find_best(b->head, b->tail, actual_size);
+        }
+
+        if(found != NULL) {
+            found->is_free = false;
+            return (void *)((char *)found + b->alignment);
+        }
+    }
+    return NULL;
+}
+
+void buddy_allocator_free(Buddy_Allocator *b, void *data) {
+    if(data != NULL) {
+        Buddy_Block *block;
+
+        assert((void *)b->head <= data);
+        assert(data < (void *)b->tail);
+
+        block = (Buddy_Block *)((char *)data - b->alignment);
+        block->is_free = true;
+
+        //could also coalescence here
+        //buddy_block_coalescence(b->head, b->tail);
+    }
 }
